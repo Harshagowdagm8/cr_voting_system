@@ -1,0 +1,554 @@
+<!-- templates/vote.html - Student Voting Page -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cast Your Vote - CR Election</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        /* Student Verification Card */
+        .verification-card {
+            background: white;
+            border-radius: 32px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .verification-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #1e293b;
+        }
+
+        .verification-form {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .verification-form input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .verification-form input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .verify-btn {
+            padding: 14px 32px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .verify-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Election Status Banner */
+        .election-banner {
+            background: rgba(255,255,255,0.95);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .election-active {
+            color: #10b981;
+            font-weight: 600;
+        }
+
+        .election-inactive {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        /* Candidates Grid */
+        .candidates-section {
+            background: white;
+            border-radius: 32px;
+            padding: 32px;
+        }
+
+        .candidates-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 24px;
+            color: #1e293b;
+        }
+
+        .candidates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .candidate-option {
+            background: #f8fafc;
+            border-radius: 24px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+            position: relative;
+        }
+
+        .candidate-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+
+        .candidate-option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102,126,234,0.05) 0%, rgba(118,75,162,0.05) 100%);
+        }
+
+        .candidate-photo {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            overflow: hidden;
+        }
+
+        .candidate-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .candidate-photo i {
+            font-size: 48px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .candidate-name {
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .candidate-usn {
+            text-align: center;
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .candidate-slogan {
+            text-align: center;
+            font-size: 13px;
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .radio-indicator {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid #cbd5e1;
+            background: white;
+        }
+
+        .candidate-option.selected .radio-indicator {
+            border-color: #667eea;
+            background: #667eea;
+            box-shadow: inset 0 0 0 4px white;
+        }
+
+        .submit-vote {
+            margin-top: 32px;
+            text-align: center;
+        }
+
+        .submit-btn {
+            padding: 16px 48px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .alert {
+            padding: 16px 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border-left: 4px solid #10b981;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .already-voted {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 32px;
+        }
+
+        .already-voted i {
+            font-size: 64px;
+            color: #10b981;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .verification-form {
+                flex-direction: column;
+            }
+            .candidates-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 id="electionTitle"><i class="fas fa-vote-yea"></i> Class Representative Election</h1>
+            <p>Cast your vote for the next Class Representative</p>
+        </div>
+
+        <div id="main-content">
+            <!-- Verification Section -->
+            <div class="verification-card" id="verification-section">
+                <div class="verification-title">
+                    <i class="fas fa-id-card"></i> Student Verification
+                </div>
+                <div id="verify-alert"></div>
+                <div class="verification-form">
+                    <input type="text" id="student-name" placeholder="Enter your full name" autocomplete="off">
+                    <input type="text" id="student-usn" placeholder="Enter your USN (e.g., 4XX21CSXXX)" autocomplete="off">
+                    <button class="verify-btn" onclick="verifyStudent()">
+                        <i class="fas fa-check-circle"></i> Verify & Continue
+                    </button>
+                </div>
+            </div>
+
+            <!-- Voting Section (Hidden initially) -->
+            <div id="voting-section" style="display: none;">
+                <div class="election-banner" id="election-status-banner">
+                    <!-- Status will be loaded here -->
+                </div>
+                <div class="candidates-section">
+                    <div class="candidates-title">
+                        <i class="fas fa-user-tie"></i> Select Your Candidate
+                    </div>
+                    <div id="vote-alert"></div>
+                    <div class="candidates-grid" id="candidates-grid">
+                        <!-- Candidates will be loaded here -->
+                    </div>
+                    <div class="submit-vote">
+                        <button class="submit-btn" id="submit-vote-btn" onclick="submitVote()" disabled>
+                            <i class="fas fa-check-circle"></i> Confirm Vote
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Already Voted Section -->
+            <div id="already-voted-section" style="display: none;" class="already-voted">
+                <i class="fas fa-check-circle"></i>
+                <h2>You've Already Voted!</h2>
+                <p>Thank you for participating in the election.</p>
+                <p style="margin-top: 20px; color: #64748b;">Your vote has been recorded successfully.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedCandidateId = null;
+        let verifiedStudent = null;
+        let electionActive = false;
+        let electionName = 'Class Representative Election';
+
+        // Check URL for share code and load election status
+        async function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            
+            if (code) {
+                // Verify share code (optional: you can validate against backend)
+                console.log('Accessing via share link');
+            }
+            
+            await loadElectionName();
+            await loadElectionStatus();
+        }
+
+        async function loadElectionName() {
+            try {
+                const response = await fetch('/api/election/status');
+                const data = await response.json();
+                electionName = data.election_name || 'Class Representative Election';
+                document.getElementById('electionTitle').innerHTML = `<i class="fas fa-vote-yea"></i> ${escapeHtml(electionName)}`;
+            } catch (error) {
+                console.error('Error loading election name:', error);
+            }
+        }
+
+        async function loadElectionStatus() {
+            try {
+                const response = await fetch('/api/election/status');
+                const status = await response.json();
+                electionActive = status.is_active;
+                
+                if (!electionActive) {
+                    const banner = document.getElementById('election-status-banner');
+                    if (banner) {
+                        banner.innerHTML = `
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> ${escapeHtml(electionName)} is currently not active. Please wait for the admin to start the election.
+                            </div>
+                        `;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading election status:', error);
+            }
+        }
+
+        async function verifyStudent() {
+            const name = document.getElementById('student-name').value.trim();
+            const usn = document.getElementById('student-usn').value.trim().toUpperCase();
+            
+            if (!name || !usn) {
+                showAlert('verify-alert', 'Please enter both name and USN', 'error');
+                return;
+            }
+            
+            if (!electionActive) {
+                showAlert('verify-alert', `${electionName} is not active. Please try again later.`, 'error');
+                return;
+            }
+            
+            // Store verified student info
+            verifiedStudent = { name, usn };
+            
+            // Hide verification, show voting section
+            document.getElementById('verification-section').style.display = 'none';
+            document.getElementById('voting-section').style.display = 'block';
+            
+            // Load candidates
+            await loadCandidates();
+            
+            // Show election status banner
+            const banner = document.getElementById('election-status-banner');
+            banner.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle"></i> Verified: ${escapeHtml(name)} (${usn})
+                </div>
+                <div class="election-active"><i class="fas fa-circle"></i> ${escapeHtml(electionName)} is ACTIVE - You can vote now!</div>
+            `;
+        }
+
+        async function loadCandidates() {
+            try {
+                const response = await fetch('/api/candidates');
+                const candidates = await response.json();
+                const grid = document.getElementById('candidates-grid');
+                
+                if (candidates.length === 0) {
+                    grid.innerHTML = '<div style="text-align: center; padding: 40px;">No candidates available for this election.</div>';
+                    document.getElementById('submit-vote-btn').disabled = true;
+                    return;
+                }
+                
+                grid.innerHTML = candidates.map(candidate => `
+                    <div class="candidate-option" data-id="${candidate.id}" onclick="selectCandidate(${candidate.id})">
+                        <div class="candidate-photo">
+                            ${candidate.photo ? 
+                                `<img src="/static/uploads/${candidate.photo}" alt="${candidate.name}">` : 
+                                `<i class="fas fa-user-circle"></i>`
+                            }
+                        </div>
+                        <div class="candidate-name">${escapeHtml(candidate.name)}</div>
+                        <div class="candidate-usn">${candidate.usn}</div>
+                        <div class="candidate-slogan">"${escapeHtml(candidate.slogan || 'Vote for me!')}"</div>
+                        <div class="radio-indicator"></div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading candidates:', error);
+            }
+        }
+
+        function selectCandidate(id) {
+            selectedCandidateId = id;
+            // Update UI
+            document.querySelectorAll('.candidate-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            document.querySelector(`.candidate-option[data-id="${id}"]`).classList.add('selected');
+            document.getElementById('submit-vote-btn').disabled = false;
+        }
+
+        async function submitVote() {
+            if (!selectedCandidateId) {
+                showAlert('vote-alert', 'Please select a candidate to vote for', 'error');
+                return;
+            }
+            
+            if (!verifiedStudent) {
+                showAlert('vote-alert', 'Session expired. Please refresh and verify again.', 'error');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submit-vote-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            
+            try {
+                const response = await fetch('/api/vote', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        student_name: verifiedStudent.name,
+                        student_usn: verifiedStudent.usn,
+                        candidate_id: selectedCandidateId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Show success and hide voting section
+                    document.getElementById('voting-section').style.display = 'none';
+                    document.getElementById('already-voted-section').style.display = 'block';
+                } else {
+                    showAlert('vote-alert', data.error || 'Failed to submit vote', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Vote';
+                    
+                    if (data.error && data.error.includes('already voted')) {
+                        document.getElementById('voting-section').style.display = 'none';
+                        document.getElementById('already-voted-section').style.display = 'block';
+                    }
+                }
+            } catch (error) {
+                showAlert('vote-alert', 'Network error. Please try again.', 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Vote';
+            }
+        }
+
+        function showAlert(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        init();
+    </script>
+    
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/static/sw.js')
+            .then(reg => console.log('Service Worker registered!', reg))
+            .catch(err => console.log('Service Worker failed:', err));
+    }
+    </script>
+</body>
+</html>

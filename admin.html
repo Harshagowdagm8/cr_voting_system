@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | CR Voting System</title>
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Sidebar - Hidden by default */
+        .sidebar {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100%;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: white;
+            transition: left 0.3s ease-in-out;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .sidebar-logo i {
+            font-size: 32px;
+        }
+
+        .sidebar-logo h2 {
+            font-size: 20px;
+        }
+
+        .sidebar-user {
+            margin-top: 16px;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+        }
+
+        .sidebar-nav {
+            padding: 24px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #94a3b8;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(102,126,234,0.2);
+            color: white;
+        }
+
+        .nav-item i {
+            width: 24px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 0;
+            padding: 24px 32px;
+            transition: margin-left 0.3s ease-in-out;
+            min-height: 100vh;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            background: white;
+            padding: 16px 24px;
+            border-radius: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .menu-toggle {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: white;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+
+        .menu-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        .page-title h1 {
+            font-size: 24px;
+            color: #1e293b;
+        }
+
+        .page-title p {
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .admin-name {
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .logout-btn {
+            background: #ef4444;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        /* Overlay when sidebar is open */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            cursor: pointer;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+        }
+
+        .stat-info h3 {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .stat-info .value {
+            font-size: 36px;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+        }
+
+        /* Election Name Section */
+        .election-name-section {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .election-name-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .election-name-input-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .election-name-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .election-name-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .current-election-name {
+            margin-top: 12px;
+            font-size: 14px;
+            color: #64748b;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        /* Control Panel */
+        .control-panel {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .panel-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 40px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #667eea;
+            color: #667eea;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Voting Link Generator */
+        .voting-link-section {
+            margin-top: 16px;
+            padding: 16px;
+            background: #f1f5f9;
+            border-radius: 12px;
+        }
+
+        .voting-link-section p {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #1e293b;
+        }
+
+        .voting-link-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            color: #1e293b;
+        }
+
+        .voting-link-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Candidates Grid */
+        .candidates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        .candidate-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .candidate-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.1);
+        }
+
+        .candidate-photo {
+            height: 220px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .candidate-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .candidate-photo .default-icon {
+            font-size: 80px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .candidate-info {
+            padding: 20px;
+        }
+
+        .candidate-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .candidate-usn {
+            color: #667eea;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .candidate-slogan {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 16px;
+            font-style: italic;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-radius: 12px;
+        }
+
+        .vote-count {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #f1f5f9;
+            border-radius: 12px;
+        }
+
+        .vote-count span {
+            font-weight: 700;
+            font-size: 20px;
+            color: #1e293b;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .card-actions button {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-edit {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        /* Voters Table */
+        .voters-table-container {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            overflow-x: auto;
+        }
+
+        .voters-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .voters-table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .voters-table th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .voters-table td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .voters-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .voters-table tfoot {
+            background: #f8fafc;
+            font-weight: 600;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 32px;
+            width: 90%;
+            max-width: 550px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalFadeIn 0.3s;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .close-modal {
+            cursor: pointer;
+            font-size: 28px;
+            color: #64748b;
+            transition: all 0.3s;
+        }
+
+        .close-modal:hover {
+            color: #ef4444;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #64748b;
+        }
+
+        /* Floating Menu Button */
+        .float-menu-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 998;
+            transition: all 0.3s;
+        }
+
+        .float-menu-btn i {
+            font-size: 24px;
+            color: white;
+        }
+
+        .float-menu-btn:hover {
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 16px;
+            }
+            .candidates-grid {
+                grid-template-columns: 1fr;
+            }
+            .float-menu-btn {
+                display: flex;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .sidebar.open {
+                left: 0;
+            }
+            .main-content.shifted {
+                margin-left: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Overlay -->
+    <div class="overlay" onclick="closeSidebar()"></div>
+
+    <!-- Floating Menu Button (Mobile) -->
+    <div class="float-menu-btn" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="fas fa-vote-yea"></i>
+                <h2>CR Voting</h2>
+            </div>
+            <div class="sidebar-user">
+                <div><i class="fas fa-user-shield"></i> <span id="sidebar-admin-name">Admin</span></div>
+            </div>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-item active" onclick="showSection('dashboard', event); closeSidebar();">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </div>
+            <div class="nav-item" onclick="showSection('candidates', event); closeSidebar();">
+                <i class="fas fa-users"></i> Candidates
+            </div>
+            <div class="nav-item" onclick="showSection('election', event); closeSidebar();">
+                <i class="fas fa-vote-yea"></i> Election Control
+            </div>
+            <div class="nav-item" onclick="showSection('results', event); closeSidebar();">
+                <i class="fas fa-chart-bar"></i> Results
+            </div>
+            <div class="nav-item" onclick="showSection('voters', event); closeSidebar();">
+                <i class="fas fa-list"></i> Voters List
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-title">
+                    <h1 id="page-title">Dashboard</h1>
+                    <p id="page-subtitle">Welcome back! Here's what's happening with your election.</p>
+                </div>
+            </div>
+            <div class="admin-info">
+                <span class="admin-name"><i class="fas fa-user-circle"></i> <span id="admin-name">Admin</span></span>
+                <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Total Candidates</h3>
+                        <div class="value" id="total-candidates">0</div>
+                    </div>
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Total Votes Cast</h3>
+                        <div class="value" id="total-votes">0</div>
+                    </div>
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Election Status</h3>
+                        <div class="value" id="election-status">Loading...</div>
+                    </div>
+                    <div class="stat-icon"><i class="fas fa-flag-checkered"></i></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-info">
+                        <h3>Voter Turnout</h3>
+                        <div class="value" id="turnout">0%</div>
+                    </div>
+                    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                </div>
+            </div>
+
+            <!-- Election Name Section -->
+            <div class="election-name-section">
+                <label class="election-name-label">
+                    <i class="fas fa-tag"></i> Election Name
+                </label>
+                <div class="election-name-input-group">
+                    <input type="text" id="electionNameInput" class="election-name-input" placeholder="Enter election name (e.g., Class Representative Election 2024)">
+                    <button class="btn btn-primary" onclick="updateElectionName()">
+                        <i class="fas fa-save"></i> Save Name
+                    </button>
+                </div>
+                <div class="current-election-name">
+                    <i class="fas fa-info-circle"></i> Current Election: <strong id="electionNameDisplay">Loading...</strong>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-tasks"></i> Quick Election Controls</h3>
+                    <div class="btn-group">
+                        <button class="btn btn-success" onclick="startElection()" id="start-btn"><i class="fas fa-play"></i> Start Election</button>
+                        <button class="btn btn-danger" onclick="stopElection()" id="stop-btn"><i class="fas fa-stop"></i> Stop Election</button>
+                        <button class="btn btn-primary" onclick="openAddCandidateModal()"><i class="fas fa-user-plus"></i> Add Candidate</button>
+                        <button class="btn btn-outline" onclick="showShareLink()"><i class="fas fa-share-alt"></i> Share Link</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-header">
+                <h3><i class="fas fa-user-tie"></i> Recent Candidates</h3>
+                <button class="btn btn-primary" onclick="showSection('candidates', event)">View All <i class="fas fa-arrow-right"></i></button>
+            </div>
+            <div id="recent-candidates" class="candidates-grid"></div>
+        </div>
+
+        <!-- Candidates Section -->
+        <div id="candidates-section" style="display: none;">
+            <div class="panel-header">
+                <h3><i class="fas fa-user-tie"></i> All Candidates</h3>
+                <button class="btn btn-primary" onclick="openAddCandidateModal()"><i class="fas fa-plus"></i> Add Candidate</button>
+            </div>
+            <div id="all-candidates" class="candidates-grid"></div>
+        </div>
+
+        <!-- Election Section -->
+        <div id="election-section" style="display: none;">
+            <div class="control-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-sliders-h"></i> Election Controls</h3>
+                </div>
+                <div class="btn-group" style="margin-bottom: 24px;">
+                    <button class="btn btn-success" onclick="startElection()" id="start-btn2"><i class="fas fa-play"></i> Start Election</button>
+                    <button class="btn btn-danger" onclick="stopElection()" id="stop-btn2"><i class="fas fa-stop"></i> Stop Election</button>
+                    <button class="btn btn-outline" onclick="showShareLink()"><i class="fas fa-share-alt"></i> Get Shareable Link</button>
+                </div>
+                <div id="election-info" style="padding: 20px; background: #f8fafc; border-radius: 20px;">
+                    <h4>Election Information</h4>
+                    <p><strong>Election Name:</strong> <span id="electionNameInfo">Loading...</span></p>
+                    <p>Current Status: <strong id="election-status-text">Inactive</strong></p>
+                    <p id="election-message">The election is currently not active. Click "Start Election" to begin voting.</p>
+                </div>
+                        <!-- ===== SHARE LINK SECTION - PASTE THIS ===== -->
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e2e8f0;">
+            <h4><i class="fas fa-link" style="color: #667eea;"></i> Voting Link</h4>
+            <p style="color: #64748b; font-size: 14px;">Share this link with students to vote</p>
+            
+            <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="generateNewLink()">
+                    <i class="fas fa-sync-alt"></i> Generate New Link
+                </button>
+                <button class="btn btn-outline" onclick="copyLinkToClipboard()">
+                    <i class="fas fa-copy"></i> Copy Link
+                </button>
+                <button class="btn btn-success" onclick="shareOnWhatsApp()" style="background: #25D366;">
+                    <i class="fab fa-whatsapp"></i> Share on WhatsApp
+                </button>
+            </div>
+            
+            <div style="margin-top: 12px;">
+                <input type="text" id="votingLinkDisplay" readonly 
+                       style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; 
+                              font-size: 14px; background: #f8fafc;">
+            </div>
+            
+            <div id="linkStatus" style="margin-top: 8px; font-size: 14px; color: #64748b;"></div>
+        </div>
+        <!-- ===== SHARE LINK SECTION END ===== -->
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results-section" style="display: none;">
+            <div class="control-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-chart-bar"></i> Live Election Results</h3>
+                    <button class="btn btn-outline" onclick="refreshResults()"><i class="fas fa-sync-alt"></i> Refresh</button>
+                </div>
+                <div id="results-content"></div>
+            </div>
+        </div>
+
+        <!-- Voters Section -->
+        <div id="voters-section" style="display: none;">
+            <div class="control-panel">
+                <div class="panel-header">
+                    <h3><i class="fas fa-list"></i> Students Who Have Voted</h3>
+                    <button class="btn btn-outline" onclick="exportVotersList()"><i class="fas fa-download"></i> Export CSV</button>
+                </div>
+                <div id="voters-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Candidate Modal -->
+    <div id="candidateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Add Candidate</h3>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="candidateForm" enctype="multipart/form-data">
+                    <input type="hidden" id="candidate-id">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="candidate-name" required placeholder="Enter candidate's full name">
+                    </div>
+                    <div class="form-group">
+                        <label>USN (University Serial Number) *</label>
+                        <input type="text" id="candidate-usn" required placeholder="e.g., 4XX21CS001">
+                    </div>
+                    <div class="form-group">
+                        <label>Campaign Slogan *</label>
+                        <textarea id="candidate-slogan" rows="3" required placeholder="Enter their campaign slogan..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Candidate Photo (Optional)</label>
+                        <input type="file" id="candidate-photo" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Save Candidate</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    let currentSection = 'dashboard';
+
+    // Toggle Sidebar
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.querySelector('.overlay');
+        const mainContent = document.getElementById('mainContent');
+        
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+        
+        if (window.innerWidth > 768) {
+            if (sidebar.classList.contains('open')) {
+                mainContent.classList.add('shifted');
+            } else {
+                mainContent.classList.remove('shifted');
+            }
+        }
+    }
+
+    function closeSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.querySelector('.overlay');
+        const mainContent = document.getElementById('mainContent');
+        
+        sidebar.classList.remove('open');
+        overlay.classList.remove('active');
+        
+        if (window.innerWidth > 768) {
+            mainContent.classList.remove('shifted');
+        }
+    }
+
+    function showSection(section, event) {
+        currentSection = section;
+        
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        if (event && event.target) {
+            const navItem = event.target.closest('.nav-item');
+            if (navItem) navItem.classList.add('active');
+        }
+        
+        document.getElementById('dashboard-section').style.display = 'none';
+        document.getElementById('candidates-section').style.display = 'none';
+        document.getElementById('election-section').style.display = 'none';
+        document.getElementById('results-section').style.display = 'none';
+        document.getElementById('voters-section').style.display = 'none';
+        
+        document.getElementById(`${section}-section`).style.display = 'block';
+        
+        const titles = {
+            'dashboard': { title: 'Dashboard', subtitle: 'Welcome back! Here\'s what\'s happening with your election.' },
+            'candidates': { title: 'Candidates', subtitle: 'Manage all election candidates. Add, edit, or remove candidates.' },
+            'election': { title: 'Election Control', subtitle: 'Start, stop, and manage the election process.' },
+            'results': { title: 'Results', subtitle: 'View live election results and statistics.' },
+            'voters': { title: 'Voters List', subtitle: 'See which students have cast their votes.' }
+        };
+        
+        document.getElementById('page-title').innerText = titles[section].title;
+        document.getElementById('page-subtitle').innerText = titles[section].subtitle;
+        
+        if (section === 'dashboard') {
+            loadDashboard();
+        } else if (section === 'candidates') {
+            loadAllCandidates();
+        } else if (section === 'election') {
+            loadElectionStatusPage();
+            // Load voting link when Election Control tab is opened
+            loadExistingLink();
+        } else if (section === 'results') {
+            loadResultsPage();
+        } else if (section === 'voters') {
+            loadVotersList();
+        }
+    }
+
+    async function checkAuth() {
+        try {
+            const response = await fetch('/api/admin/check-auth');
+            const data = await response.json();
+            if (!data.authenticated) {
+                window.location.href = '/';
+            } else {
+                document.getElementById('admin-name').innerText = data.admin_name || 'Admin';
+                document.getElementById('sidebar-admin-name').innerText = data.admin_name || 'Admin';
+                loadDashboard();
+            }
+        } catch (error) {
+            window.location.href = '/';
+        }
+    }
+
+    async function loadElectionName() {
+        try {
+            const response = await fetch('/api/election/status');
+            const data = await response.json();
+            const electionName = data.election_name || 'Class Representative Election';
+            document.getElementById('electionNameDisplay').innerText = electionName;
+            document.getElementById('electionNameInfo').innerText = electionName;
+            document.getElementById('electionNameInput').value = electionName;
+        } catch (error) {
+            console.error('Error loading election name:', error);
+        }
+    }
+
+    async function updateElectionName() {
+        const newName = document.getElementById('electionNameInput').value.trim();
+        if (!newName) {
+            alert('Please enter an election name');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/election/name', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ election_name: newName })
+            });
+            
+            if (response.ok) {
+                alert('✅ Election name updated successfully!');
+                await loadElectionName();
+            } else {
+                alert('❌ Failed to update election name');
+            }
+        } catch (error) {
+            alert('❌ Network error');
+        }
+    }
+
+    async function loadDashboard() {
+        await loadStats();
+        await loadRecentCandidates();
+        await loadElectionName();
+    }
+
+    async function loadStats() {
+        try {
+            const candidatesRes = await fetch('/api/candidates');
+            const candidates = await candidatesRes.json();
+            document.getElementById('total-candidates').innerText = candidates.length;
+            
+            const resultsRes = await fetch('/api/results');
+            const results = await resultsRes.json();
+            document.getElementById('total-votes').innerText = results.total_votes || 0;
+            
+            const statusRes = await fetch('/api/election/status');
+            const status = await statusRes.json();
+            const statusEl = document.getElementById('election-status');
+            if (status.is_active) {
+                statusEl.innerHTML = '<span style="color: #10b981;"><i class="fas fa-circle"></i> Active</span>';
+            } else {
+                statusEl.innerHTML = '<span style="color: #ef4444;"><i class="fas fa-circle"></i> Inactive</span>';
+            }
+            
+            const turnout = results.total_votes ? Math.min(100, Math.round((results.total_votes / 100) * 100)) : 0;
+            document.getElementById('turnout').innerText = `${turnout}%`;
+        } catch (error) {
+            console.error('Error loading stats:', error);
+        }
+    }
+
+    async function loadRecentCandidates() {
+        try {
+            const response = await fetch('/api/candidates');
+            const candidates = await response.json();
+            const recent = candidates.slice(0, 3);
+            const grid = document.getElementById('recent-candidates');
+            
+            if (recent.length === 0) {
+                grid.innerHTML = '<div style="text-align: center; padding: 40px; background: white; border-radius: 24px;">No candidates yet. Click "Add Candidate" to get started.</div>';
+                return;
+            }
+            
+            grid.innerHTML = recent.map(candidate => `
+                <div class="candidate-card">
+                    <div class="candidate-photo">
+                        ${candidate.photo ? `<img src="/static/uploads/${candidate.photo}" alt="${candidate.name}">` : '<i class="fas fa-user-circle default-icon"></i>'}
+                    </div>
+                    <div class="candidate-info">
+                        <div class="candidate-name">${escapeHtml(candidate.name)}</div>
+                        <div class="candidate-usn">${candidate.usn}</div>
+                        <div class="candidate-slogan">"${escapeHtml(candidate.slogan || 'Vote for me!')}"</div>
+                        <div class="vote-count">
+                            <span><i class="fas fa-vote-yea"></i> ${candidate.votes || 0} votes</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading recent candidates:', error);
+        }
+    }
+
+    async function loadAllCandidates() {
+        try {
+            const response = await fetch('/api/candidates');
+            const candidates = await response.json();
+            const grid = document.getElementById('all-candidates');
+            
+            if (candidates.length === 0) {
+                grid.innerHTML = '<div style="text-align: center; padding: 60px; background: white; border-radius: 24px;"><i class="fas fa-user-plus" style="font-size: 48px; color: #cbd5e1;"></i><p style="margin-top: 16px;">No candidates added yet. Click "Add Candidate" to get started.</p></div>';
+                return;
+            }
+            
+            grid.innerHTML = candidates.map(candidate => `
+                <div class="candidate-card">
+                    <div class="candidate-photo">
+                        ${candidate.photo ? `<img src="/static/uploads/${candidate.photo}" alt="${candidate.name}">` : '<i class="fas fa-user-circle default-icon"></i>'}
+                    </div>
+                    <div class="candidate-info">
+                        <div class="candidate-name">${escapeHtml(candidate.name)}</div>
+                        <div class="candidate-usn">${candidate.usn}</div>
+                        <div class="candidate-slogan">"${escapeHtml(candidate.slogan || 'Vote for me!')}"</div>
+                        <div class="vote-count">
+                            <span><i class="fas fa-vote-yea"></i> ${candidate.votes || 0} votes</span>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-edit" onclick="editCandidate(${candidate.id})"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="btn-delete" onclick="deleteCandidate(${candidate.id})"><i class="fas fa-trash"></i> Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error loading candidates:', error);
+        }
+    }
+
+    async function loadElectionStatusPage() {
+        await loadElectionName();
+        const response = await fetch('/api/election/status');
+        const status = await response.json();
+        const startBtn = document.getElementById('start-btn2');
+        const stopBtn = document.getElementById('stop-btn2');
+        const statusText = document.getElementById('election-status-text');
+        const message = document.getElementById('election-message');
+        
+        if (status.is_active) {
+            statusText.innerHTML = '<span style="color: #10b981;"><i class="fas fa-circle"></i> ACTIVE</span>';
+            message.innerHTML = 'The election is currently ACTIVE. Students can now vote. Click "Stop Election" to end voting.';
+            if (startBtn) startBtn.disabled = true;
+            if (stopBtn) stopBtn.disabled = false;
+        } else {
+            statusText.innerHTML = '<span style="color: #ef4444;"><i class="fas fa-circle"></i> INACTIVE</span>';
+            message.innerHTML = 'The election is currently INACTIVE. Click "Start Election" to begin voting.';
+            if (startBtn) startBtn.disabled = false;
+            if (stopBtn) stopBtn.disabled = true;
+        }
+        const startBtnDash = document.getElementById('start-btn');
+        const stopBtnDash = document.getElementById('stop-btn');
+        if (startBtnDash && stopBtnDash) {
+            if (status.is_active) {
+                startBtnDash.disabled = true;
+                stopBtnDash.disabled = false;
+            } else {
+                startBtnDash.disabled = false;
+                stopBtnDash.disabled = true;
+            }
+        }
+    }
+
+    async function loadResultsPage() {
+        const response = await fetch('/api/results');
+        const data = await response.json();
+        const container = document.getElementById('results-content');
+        
+        if (data.candidates.length === 0) {
+            container.innerHTML = '<div style="text-align: center; padding: 60px;">No candidates available.</div>';
+            return;
+        }
+        
+        const winner = data.candidates[0];
+        container.innerHTML = `
+            <div style="text-align: center; margin-bottom: 32px; padding: 32px; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: 24px;">
+                <i class="fas fa-trophy" style="font-size: 64px; color: #f59e0b;"></i>
+                <h2 style="margin-top: 16px;">Current Leader</h2>
+                <p style="font-size: 32px; font-weight: 800; margin-top: 8px;">${escapeHtml(winner.name)}</p>
+                <p style="font-size: 20px;">${winner.votes} votes (${data.total_votes > 0 ? ((winner.votes / data.total_votes) * 100).toFixed(1) : 0}%)</p>
+            </div>
+            <div style="background: white; border-radius: 24px; padding: 24px;">
+                <h3 style="margin-bottom: 20px;">All Candidates</h3>
+                ${data.candidates.map(c => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid #e2e8f0;">
+                        <div>
+                            <strong style="font-size: 16px;">${escapeHtml(c.name)}</strong>
+                            <br>
+                            <small style="color: #64748b;">${c.usn}</small>
+                        </div>
+                        <div style="text-align: right;">
+                            <span style="font-size: 24px; font-weight: 700; color: #667eea;">${c.votes}</span>
+                            <span style="color: #64748b;"> votes</span>
+                            <div style="width: 100px; height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 8px;">
+                                <div style="width: ${data.total_votes > 0 ? (c.votes / data.total_votes) * 100 : 0}%; height: 6px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 3px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('')}
+                <div style="margin-top: 24px; padding-top: 16px; border-top: 2px solid #e2e8f0; text-align: center;">
+                    <strong>Total Votes Cast: ${data.total_votes}</strong>
+                </div>
+            </div>
+        `;
+    }
+
+    async function loadVotersList() {
+        try {
+            const response = await fetch('/api/voters');
+            const data = await response.json();
+            const container = document.getElementById('voters-content');
+            
+            if (data.voters.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 60px; background: white; border-radius: 24px;"><i class="fas fa-users" style="font-size: 48px; color: #cbd5e1;"></i><p style="margin-top: 16px;">No votes cast yet. Students haven\'t voted.</p></div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="voters-table-container">
+                    <table class="voters-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Student Name</th>
+                                <th>USN</th>
+                                <th>Voted For</th>
+                                <th>Voted At</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.voters.map((voter, index) => `
+                                <tr>
+                                    <td>${index + 1}</td>
+                                    <td><strong>${escapeHtml(voter.student_name)}</strong></td>
+                                    <td style="color: #667eea; font-weight: 500;">${voter.student_usn}</td>
+                                    <td>${escapeHtml(voter.candidate_name)}</td>
+                                    <td style="color: #64748b;">${new Date(voter.voted_at).toLocaleString()}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" style="padding: 16px; text-align: center;">
+                                    <strong>Total Voters: ${data.total}</strong>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            `;
+        } catch (error) {
+            console.error('Error loading voters:', error);
+            document.getElementById('voters-content').innerHTML = '<div style="text-align: center; padding: 60px; color: red;">Error loading voters list</div>';
+        }
+    }
+
+    async function exportVotersList() {
+        try {
+            const response = await fetch('/api/voters');
+            const data = await response.json();
+            
+            if (data.voters.length === 0) {
+                alert('No voters to export');
+                return;
+            }
+            
+            let csvContent = "Student Name,USN,Voted For,Voted At\n";
+            data.voters.forEach(voter => {
+                csvContent += `"${voter.student_name}",${voter.student_usn},"${voter.candidate_name}",${new Date(voter.voted_at).toLocaleString()}\n`;
+            });
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `voters_list_${new Date().toISOString().slice(0,19)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            alert('✅ Voters list exported successfully!');
+        } catch (error) {
+            alert('❌ Error exporting voters list');
+        }
+    }
+
+    async function refreshResults() {
+        await loadResultsPage();
+    }
+
+    async function startElection() {
+        const response = await fetch('/api/election/start', { method: 'POST' });
+        if (response.ok) {
+            alert('✅ Election started successfully!');
+            loadStats();
+            loadElectionStatusPage();
+        } else {
+            alert('❌ Failed to start election');
+        }
+    }
+
+    async function stopElection() {
+        const response = await fetch('/api/election/stop', { method: 'POST' });
+        if (response.ok) {
+            alert('✅ Election stopped!');
+            loadStats();
+            loadElectionStatusPage();
+        } else {
+            alert('❌ Failed to stop election');
+        }
+    }
+
+    // ============================================================
+    // SHARE LINK FUNCTIONS - FIXED AND WORKING
+    // ============================================================
+
+    // Generate New Voting Link
+    async function generateNewLink() {
+        const statusDiv = document.getElementById('linkStatus');
+        const linkInput = document.getElementById('votingLinkDisplay');
+        
+        statusDiv.innerHTML = '⏳ Generating link...';
+        statusDiv.style.color = '#f59e0b';
+        
+        try {
+            const response = await fetch('/api/election/share-link');
+            const data = await response.json();
+            
+            if (data.share_link) {
+                linkInput.value = data.share_link;
+                statusDiv.innerHTML = '✅ New link generated and copied to clipboard!';
+                statusDiv.style.color = '#10b981';
+                
+                // Copy to clipboard
+                await navigator.clipboard.writeText(data.share_link);
+                
+                // Show popup with link
+                alert('✅ New Voting Link Generated!\n\nShare this link with students:\n\n' + data.share_link);
+                
+            } else {
+                statusDiv.innerHTML = '❌ Failed to generate link. Please try again.';
+                statusDiv.style.color = '#ef4444';
+            }
+        } catch (error) {
+            statusDiv.innerHTML = '❌ Error: ' + error.message;
+            statusDiv.style.color = '#ef4444';
+            console.error('Generate link error:', error);
+        }
+    }
+
+    // Copy Link to Clipboard
+    async function copyLinkToClipboard() {
+        const linkInput = document.getElementById('votingLinkDisplay');
+        const statusDiv = document.getElementById('linkStatus');
+        
+        if (!linkInput.value) {
+            statusDiv.innerHTML = '⚠️ No link to copy. Generate a new link first.';
+            statusDiv.style.color = '#f59e0b';
+            return;
+        }
+        
+        try {
+            await navigator.clipboard.writeText(linkInput.value);
+            statusDiv.innerHTML = '✅ Link copied to clipboard!';
+            statusDiv.style.color = '#10b981';
+            
+            // Show popup
+            alert('✅ Link copied to clipboard!\n\n' + linkInput.value);
+        } catch (error) {
+            // Fallback method
+            linkInput.select();
+            linkInput.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            statusDiv.innerHTML = '✅ Link copied to clipboard!';
+            statusDiv.style.color = '#10b981';
+            alert('✅ Link copied to clipboard!\n\n' + linkInput.value);
+        }
+    }
+
+    // Share on WhatsApp
+    function shareOnWhatsApp() {
+        const linkInput = document.getElementById('votingLinkDisplay');
+        const link = linkInput.value;
+        
+        if (!link) {
+            alert('⚠️ No link to share. Generate a new link first.');
+            return;
+        }
+        
+        const message = encodeURIComponent(
+            '📢 CLASS REPRESENTATIVE ELECTION\n\n' +
+            'Click here to vote:\n' + link + '\n\n' +
+            'Enter your Name and USN to cast your vote.'
+        );
+        
+        const whatsappUrl = 'https://wa.me/?text=' + message;
+        window.open(whatsappUrl, '_blank');
+    }
+
+    // Load existing link on page load
+    async function loadExistingLink() {
+        try {
+            const response = await fetch('/api/election/share-link');
+            const data = await response.json();
+            if (data.share_link) {
+                document.getElementById('votingLinkDisplay').value = data.share_link;
+            }
+        } catch (error) {
+            console.log('No existing link');
+        }
+    }
+
+    // ============================================================
+    // END OF SHARE LINK FUNCTIONS
+    // ============================================================
+
+    async function showShareLink() {
+        const response = await fetch('/api/election/share-link');
+        const data = await response.json();
+        const link = data.share_link;
+        navigator.clipboard.writeText(link);
+        alert('✅ Voting link copied to clipboard!\n\nShare this link with students: ' + link);
+    }
+
+    function openAddCandidateModal() {
+        document.getElementById('modal-title').innerText = 'Add Candidate';
+        document.getElementById('candidate-id').value = '';
+        document.getElementById('candidate-name').value = '';
+        document.getElementById('candidate-usn').value = '';
+        document.getElementById('candidate-slogan').value = '';
+        document.getElementById('candidate-photo').value = '';
+        document.getElementById('candidateModal').style.display = 'flex';
+    }
+
+    async function editCandidate(id) {
+        const response = await fetch('/api/candidates');
+        const candidates = await response.json();
+        const candidate = candidates.find(c => c.id === id);
+        if (candidate) {
+            document.getElementById('modal-title').innerText = 'Edit Candidate';
+            document.getElementById('candidate-id').value = candidate.id;
+            document.getElementById('candidate-name').value = candidate.name;
+            document.getElementById('candidate-usn').value = candidate.usn;
+            document.getElementById('candidate-slogan').value = candidate.slogan || '';
+            document.getElementById('candidateModal').style.display = 'flex';
+        }
+    }
+
+    async function deleteCandidate(id) {
+        if (confirm('⚠️ Are you sure you want to delete this candidate? This will also remove all votes for them.')) {
+            const response = await fetch(`/api/candidates/${id}`, { method: 'DELETE' });
+            if (response.ok) {
+                alert('✅ Candidate deleted successfully');
+                loadDashboard();
+                loadAllCandidates();
+            } else {
+                alert('❌ Failed to delete candidate');
+            }
+        }
+    }
+
+    document.getElementById('candidateForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('candidate-id').value;
+        const formData = new FormData();
+        formData.append('name', document.getElementById('candidate-name').value);
+        formData.append('usn', document.getElementById('candidate-usn').value.toUpperCase());
+        formData.append('slogan', document.getElementById('candidate-slogan').value);
+        const photo = document.getElementById('candidate-photo').files[0];
+        if (photo) formData.append('photo', photo);
+        
+        let url = '/api/candidates';
+        let method = 'POST';
+        if (id) {
+            url = `/api/candidates/${id}`;
+            method = 'PUT';
+        }
+        
+        const response = await fetch(url, { method, body: formData });
+        if (response.ok) {
+            alert(id ? '✅ Candidate updated successfully' : '✅ Candidate added successfully');
+            closeModal();
+            loadDashboard();
+            loadAllCandidates();
+        } else {
+            const error = await response.json();
+            alert('❌ Failed: ' + (error.error || 'Unknown error'));
+        }
+    });
+
+    function closeModal() {
+        document.getElementById('candidateModal').style.display = 'none';
+    }
+
+    async function logout() {
+        await fetch('/api/admin/logout', { method: 'POST' });
+        window.location.href = '/';
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('candidateModal');
+        if (event.target === modal) closeModal();
+    }
+
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+        const menuBtn = event.target.closest('.menu-toggle');
+        const floatBtn = event.target.closest('.float-menu-btn');
+        const navItem = event.target.closest('.nav-item');
+        
+        if (window.innerWidth <= 768) {
+            if (sidebar.classList.contains('open') && !menuBtn && !floatBtn && !navItem) {
+                closeSidebar();
+            }
+        }
+    });
+
+    checkAuth();
+</script>
+    <script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/static/sw.js')
+            .then(reg => console.log('Service Worker registered!', reg))
+            .catch(err => console.log('Service Worker failed:', err));
+    }
+    </script>
+</body>
+</html>
