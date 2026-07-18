@@ -1,0 +1,13 @@
+
+
+cd Desktop\cr_voting_system
+
+
+
+
+python app.py
+
+
+
+
+
