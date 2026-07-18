@@ -1,6 +1,8 @@
 # cr_voting_system
 A secure web-based voting system for class representative elections. Built with Flask, MySQL, and responsive frontend. Features USN authentication, real-time vote counting, duplicate vote prevention, CSV export, and PWA mobile support. Shareable links allow voting from anywhere.
 
+A secure, transparent, and efficient web-based voting platform designed to digitize class representative elections in educational institutions. Built with Flask (Python), MySQL, and responsive frontend technologies, the system eliminates manual voting drawbacks like paper ballots, duplicate voting, and slow counting. Key features include USN-based student authentication (one vote per student), real-time vote counting, instant result display with leader identification, CSV export for voter list audit, and PWA (Progressive Web App) support for seamless mobile access. Administrators can manage candidates, control election timelines, and monitor results in real-time, while students can vote from any device via shareable links.
+
 
 # 🗳️ Class Representative Voting Management System
 
